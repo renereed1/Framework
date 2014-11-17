@@ -22,9 +22,12 @@ class Request
     
     public function getUrl()
     {
-        $url = rtrim($this->query['url'], '/');
-        $url = filter_var($url, FILTER_SANITIZE_URL);
-        
+        $url = '/';
+        if (array_key_exists('url', $this->query))
+        {
+            $url = rtrim($this->query['url'], '/');
+            $url = filter_var($url, FILTER_SANITIZE_URL);
+        }
         return $url;
     }
     

@@ -12,7 +12,9 @@ class Database
     {
         $this->configuration = $configuration['database'];
         
-        $this->handler = new \PDO('mysql:host=' . $this->configuration['host'] . ';dbname=' . $this->configuration['db'], $this->configuration['user'], $this->configuration['pass']);
+        $this->handler = new \PDO('mysql:host=' . $this->configuration['host'] . ';dbname=' . $this->configuration['db'] . ';charset=utf8', $this->configuration['user'], $this->configuration['pass']);
+        $this->handler->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+        $this->handler->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
     }
     
     public function __destruct()
