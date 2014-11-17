@@ -2,77 +2,46 @@
 
 namespace Salestream\Framework;
 
-use Salestream\Framework\Http\Request;
+use Salestream\Framework\Router;
 
 class Application implements FrontController
 {
     private $configuration;
     
-    private $request;
-    
-    private $response;
-    
     public function __construct(array $configuration = array())
     {
         $this->configuration = $configuration;
-        $this->request = Request::createFromSuperGlobals();
     }
     
-    public function getRequest()
-    {
-        return $this->request;
-    }
-    
-    public function getResponse()
-    {
-        return $this->response;
-    }
-    
+    /**
+     * Run the application.
+     */
     public function run()
-    {        
-        $url = explode('/', $this->request->getUrl());
+    {
+        $router = new Router($this->configuration);
+        $viewObject = $router->go();
         
-        $namespace = $this->configuration['namespace'];
-        $controller = ucfirst($url[0]) . 'Controller';
-        $action = lcfirst($url[1]) . 'Action';
-        
-        $class = $namespace . '\\' . $controller;
-        
-        if (!class_exists($class))
-        {
-            throw new \Exception('Class ' . $class . ' does not exist');
-        }
-        
-        $class = new $class;
-        
-        if (!method_exists($class, $action))
-        {
-            throw new \Exception('Action ' . $action . ' does not exist in class ' . $controller);
-        }
-        
-        unset($url[0]);
-        unset($url[1]);
-        
-        $params = $url ? array_values($url) : [];
-        
-        $viewObject = call_user_func(array($class, $action), $params);
-        
-        $view_template = explode('/', $viewObject->getTemplate());
-        
-        $this->clean($viewObject->getData());
-        
-        $template = $this->configuration['path_to_views'] . $view_template[0] . '\\' . $view_template[1] . '.php';
+        $template = $this->configuration['path_to_views'] . '/' . $viewObject['template'] . '.php';
+
         if (file_exists($template))
         {
-            include $template;
+            $this->renderView($template, $viewObject['view_data']);
         }
     }
     
-    private function clean($str)
+    /**
+     * Calls a view template, and supplies data to be rendered in html.
+     * 
+     * @param type $template
+     * @param type $data
+     */
+    public function renderView($template, $data)
     {
-        echo '<pre>';
-        print_r($str);
-        echo '</pre>';
+        foreach ($data as $value)
+        {
+            extract($value, EXTR_OVERWRITE);
+        }
+        $data = [];
+        include_once $template;
     }
 }
-

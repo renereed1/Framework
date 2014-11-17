@@ -28,9 +28,23 @@ class Request
         return $url;
     }
     
+    public function getMethod()
+    {
+        return $this->server['REQUEST_METHOD'];
+    }
+    
     public static function createFromSuperGlobals(array $query = array(), array $request = array(), array $attributes = array(), array $server = array())
     {
-        
         return new Request($_GET, $_POST, array(), $_SERVER);
+    }
+    
+    public function getPost()
+    {
+        return $this->request;
+    }
+    
+    public function isPost()
+    {
+        return 'POST' == $this->server ? true : false;
     }
 }
