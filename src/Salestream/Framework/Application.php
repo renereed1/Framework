@@ -19,7 +19,7 @@ class Application implements FrontController
     public function run()
     {
         $router = new Router($this->configuration);
-        $viewObject = $router->go();
+        $viewObject = $router->dispatch();
         
         $template = $this->configuration['path_to_views'] . '/' . $viewObject['template'] . '.php';
 

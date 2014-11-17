@@ -21,7 +21,7 @@ class Router
         $this->url = $this->explodeUrl();
     }
     
-    public function go()
+    public function dispatch()
     {
         $urlComponents = parse_url($this->url);
         

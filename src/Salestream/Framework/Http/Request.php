@@ -27,7 +27,7 @@ class Request
         {
             $url = rtrim($this->query['url'], '/');
             $url = filter_var($url, FILTER_SANITIZE_URL);
-        }
+        }        
         return $url;
     }
     
