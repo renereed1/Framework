@@ -24,15 +24,8 @@ class Router
     public function dispatch()
     {
         $urlComponents = parse_url($this->url);
-        
-        $route = [];
-        
-        if (!array_key_exists('path', $urlComponents) || strlen($urlComponents['path']) < 2)
-        {
-            $route = $this->findDefaultRoute();
-        } else {
-            $route = $this->findDynamicRoute($urlComponents);
-        }
+
+        $route = $this->findRoute($urlComponents);
         
         if (!array_key_exists('controller', $route) || !array_key_exists('action', $route))
         {
@@ -77,25 +70,7 @@ class Router
         return $this->request->getUrl();
     }
     
-    /**
-     * Find the default route. This route should be used for root based url.
-     * 
-     * @return array
-     * @return null
-     */
-    private function findDefaultRoute()
-    {
-        foreach ($this->configuration['routes'] as $route)
-        {
-            if (array_key_exists('default', $route))
-            {
-                return $route;
-            }
-        }
-        return null;
-    }
-    
-    private function findDynamicRoute($urlComponents)
+    private function findRoute($urlComponents)
     {
         $urlPath = array_values(array_filter(explode('/', $urlComponents['path'])));
         
