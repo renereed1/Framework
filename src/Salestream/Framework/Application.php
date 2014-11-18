@@ -3,6 +3,7 @@
 namespace Salestream\Framework;
 
 use Salestream\Framework\Router;
+use Salestream\Framework\View\ViewRenderer;
 
 class Application implements FrontController
 {
@@ -22,26 +23,13 @@ class Application implements FrontController
         $viewObject = $router->dispatch();
         
         $template = $this->configuration['path_to_views'] . '/' . $viewObject['template'] . '.php';
-
-        if (file_exists($template))
+        
+        $viewRenderer = new ViewRenderer($template, $viewObject['view_data']);
+        $render = true;
+        if ($viewObject['template'] == '')
         {
-            $this->renderView($template, $viewObject['view_data']);
+            $render = false;
         }
-    }
-    
-    /**
-     * Calls a view template, and supplies data to be rendered in html.
-     * 
-     * @param type $template
-     * @param type $data
-     */
-    public function renderView($template, $data)
-    {
-        foreach ($data as $value)
-        {
-            extract($value, EXTR_OVERWRITE);
-        }
-        $data = [];
-        include_once $template;
+        $viewRenderer->renderView($render);
     }
 }

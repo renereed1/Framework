@@ -22,12 +22,8 @@ class Request
     
     public function getUrl()
     {
-        $url = '/';
-        if (array_key_exists('url', $this->query))
-        {
-            $url = rtrim($this->query['url'], '/');
-            $url = filter_var($url, FILTER_SANITIZE_URL);
-        }        
+        $url = rtrim($this->server['REQUEST_URI'], '/');
+        $url = filter_var($url, FILTER_SANITIZE_URL);    
         return $url;
     }
     

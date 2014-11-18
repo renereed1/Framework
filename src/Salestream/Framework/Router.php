@@ -34,6 +34,11 @@ class Router
             $route = $this->findDynamicRoute($urlComponents);
         }
         
+        if (!array_key_exists('controller', $route) || !array_key_exists('action', $route))
+        {
+            throw new \Exception('Url ' . $this->url . ' could not be found in the routing system. Please check configuration.');
+        }
+        
         $namespace = $this->configuration['namespace'];
         $controller = ucfirst($route['controller']) . 'Controller';
         $action = lcfirst($route['action']) . 'Action';
@@ -52,18 +57,18 @@ class Router
             throw new \Exception('Action ' . $action . ' does not exist in class ' . $controller);
         }
         
-        $templateFolder = $route['controller'];
+        $template = call_user_func_array(array($class, $action), $this->parameters);
         
-        $params = $this->parameters;
-        
-        $template = call_user_func_array(array($class, $action), $params);
-        
-        $templateFolder = $templateFolder . '/' . $template;
+        if ($template == '')
+        {
+            $templateFolder = '';
+        } else {
+            $templateFolder = $route['controller'] . '/' . $template;
+        }
         
         return array(
             'template' => $templateFolder,
-            'view_data' => $class->getAttributes(),
-            'parameters' => $params
+            'view_data' => $class->getAttributes()
         );
     }
     
@@ -92,7 +97,7 @@ class Router
     
     private function findDynamicRoute($urlComponents)
     {
-        $urlPath = explode('/', $urlComponents['path']);
+        $urlPath = array_values(array_filter(explode('/', $urlComponents['path'])));
         
         $urlPathCount = count($urlPath);
         
@@ -100,25 +105,43 @@ class Router
         
         foreach ($this->configuration['routes'] as $route)
         {
-            $urlPathFromConfiguration = array_values(array_filter(explode('/', $route['url'])));
+            $matchCount = 0;
+            $urlPathFromConfiguration = array_values(array_filter(explode('/', $route['url'])));;
             
             if ($urlPathCount === count($urlPathFromConfiguration) && $route['method'] === $this->request->getMethod())
             {
-                // foreach ($urlPath as $path)
-                for ($i = 0; $i < $urlPathCount; $i++)
+                if ($route['type'] === 'static')
                 {
-                    if (false !== strpos($urlPathFromConfiguration[$i], '{:'))
+                    for ($i = 0; $i < $urlPathCount; $i++)
                     {
-                        array_push($this->parameters, $urlPath[$i]);
-                        ++$matchCount;
-                    } else if ($urlPath[$i] === $urlPathFromConfiguration[$i]) {
-                        ++$matchCount;
+                        if ($urlPath[$i] === $urlPathFromConfiguration[$i] && $urlPath[$i] !== '')
+                        {
+                            ++$matchCount;
+                        }
+                    }
+                    
+                    if ($matchCount === $urlPathCount)
+                    {
+                        return $route;
+                    }
+                    
+                } else {
+                    for ($i = 0; $i < $urlPathCount; $i++)
+                    {
+                        if (false !== strpos($urlPathFromConfiguration[$i], '{:'))
+                        {
+                            array_push($this->parameters, $urlPath[$i]);
+                            ++$matchCount;
+                        } else if ($urlPath[$i] === $urlPathFromConfiguration[$i]) {
+                            ++$matchCount;
+                        }
+                    }
+                    
+                    if ($matchCount == $urlPathCount)
+                    {
+                        return $route;
                     }
                 }
-            }
-            if ($matchCount === $urlPathCount)
-            {
-                return $route;
             }
         }
         return [];
