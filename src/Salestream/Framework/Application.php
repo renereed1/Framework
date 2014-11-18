@@ -19,17 +19,24 @@ class Application implements FrontController
      */
     public function run()
     {
-        $router = new Router($this->configuration);
-        $viewObject = $router->dispatch();
-        
-        $template = $this->configuration['path_to_views'] . '/' . $viewObject['template'] . '.php';
-        
-        $viewRenderer = new ViewRenderer($template, $viewObject['view_data']);
-        $render = true;
-        if ($viewObject['template'] == '')
+        try
         {
-            $render = false;
+            $router = new Router($this->configuration);
+            $viewObject = $router->dispatch();
+        
+            $template = $this->configuration['path_to_views'] . '/' . $viewObject['template'] . '.php';
+        
+            $viewRenderer = new ViewRenderer($template, $viewObject['view_data']);
+            $render = true;
+            if ($viewObject['template'] == '')
+            {
+                $render = false;
+            }
+            $viewRenderer->renderView($render);
         }
-        $viewRenderer->renderView($render);
+        catch (\Exception $e)
+        {
+            echo $e->getMessage();
+        }
     }
 }
