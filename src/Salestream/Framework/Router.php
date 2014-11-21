@@ -12,8 +12,6 @@ class Router
     
     private $configuration;
     
-    private $parameters = [];
-    
     public function __construct($configuration)
     {
         $this->configuration = $configuration;
@@ -24,8 +22,23 @@ class Router
     public function dispatch()
     {
         $urlComponents = parse_url($this->url);
-
-        $route = $this->findRoute($urlComponents);
+        
+        $routeMatch = new RouteMatch();
+        $routeMatched = $routeMatch->findRoute($this->request->getMethod(), $this->configuration['routes'], $urlComponents);
+        
+        if (!array_key_exists('route', $routeMatched))
+        {
+            throw new \Exception();
+        }
+        
+        $route = $routeMatched['route'];
+        
+        if (!array_key_exists('parameters', $routeMatched))
+        {
+            $parameters = [];
+        } else {
+            $parameters = $routeMatched['parameters'];
+        }
         
         if (!array_key_exists('controller', $route) || !array_key_exists('action', $route))
         {
@@ -50,7 +63,7 @@ class Router
             throw new \Exception('Action ' . $action . ' does not exist in class ' . $controller);
         }
         
-        $template = call_user_func_array(array($class, $action), $this->parameters);
+        $template = call_user_func_array(array($class, $action), $parameters);
         
         if ($template == '')
         {
@@ -68,57 +81,5 @@ class Router
     private function explodeUrl()
     {
         return $this->request->getUrl();
-    }
-    
-    private function findRoute($urlComponents)
-    {
-        $urlPath = array_values(array_filter(explode('/', $urlComponents['path'])));
-        
-        $urlPathCount = count($urlPath);
-        
-        $matchCount = 0;
-        
-        foreach ($this->configuration['routes'] as $route)
-        {
-            $matchCount = 0;
-            $urlPathFromConfiguration = array_values(array_filter(explode('/', $route['url'])));;
-            
-            if ($urlPathCount === count($urlPathFromConfiguration) && $route['method'] === $this->request->getMethod())
-            {
-                if ($route['type'] === 'static')
-                {
-                    for ($i = 0; $i < $urlPathCount; $i++)
-                    {
-                        if ($urlPath[$i] === $urlPathFromConfiguration[$i] && $urlPath[$i] !== '')
-                        {
-                            ++$matchCount;
-                        }
-                    }
-                    
-                    if ($matchCount === $urlPathCount)
-                    {
-                        return $route;
-                    }
-                    
-                } else {
-                    for ($i = 0; $i < $urlPathCount; $i++)
-                    {
-                        if (false !== strpos($urlPathFromConfiguration[$i], '{:'))
-                        {
-                            array_push($this->parameters, $urlPath[$i]);
-                            ++$matchCount;
-                        } else if ($urlPath[$i] === $urlPathFromConfiguration[$i]) {
-                            ++$matchCount;
-                        }
-                    }
-                    
-                    if ($matchCount == $urlPathCount)
-                    {
-                        return $route;
-                    }
-                }
-            }
-        }
-        return [];
     }
 }
