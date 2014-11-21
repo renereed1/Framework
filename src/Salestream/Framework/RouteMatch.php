@@ -15,7 +15,7 @@ class RouteMatch
             $urlComponentsFromConfiguration = array_values(array_filter(explode('/', $route['url'])));
             $matchCount = $this->routeMatchCount($urlComponents, $urlComponentsFromConfiguration, $route, $method);
             
-            if ($this->wasRouteFound($matchCount, $urlComponentsCount))
+            if ($matchCount === $urlComponentsCount)
             {
                 return array('route' => $route, 'parameters' => $this->parameters);
             }
@@ -51,14 +51,5 @@ class RouteMatch
             }
 	}
 	return $matchCount;
-    }
-    
-    public function wasRouteFound($matchCount, $urlComponentsCount)
-    {
-        if ($matchCount === $urlComponentsCount)
-	{
-            return true;
-	}
-	return false;
     }
 }
