@@ -28,7 +28,7 @@ class ViewRenderer
         }
         if (!file_exists($this->template))
         {
-            throw new \Exception('Template not found.');
+            throw new \Exception("Template $this->template not found.");
         }
         extract($this->data, EXTR_OVERWRITE);
         
