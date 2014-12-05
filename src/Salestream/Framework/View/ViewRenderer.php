@@ -30,10 +30,8 @@ class ViewRenderer
         {
             throw new \Exception('Template not found.');
         }
-        foreach ($this->data as $value)
-        {
-            extract($value, EXTR_OVERWRITE);
-        }
+        extract($this->data, EXTR_OVERWRITE);
+        
         $this->data = null;
         include_once $this->template;
     }
