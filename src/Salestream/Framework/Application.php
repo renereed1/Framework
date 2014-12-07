@@ -24,7 +24,7 @@ class Application implements FrontController
             $router = new Router($this->configuration);
             $viewObject = $router->dispatch();
         
-            $template = $this->configuration['path_to_views'] . '/' . $viewObject['template'] . '.php';
+            $template = $this->configuration['path_to_views'] . '/' . $viewObject['template'] . '.html.php';
         
             $viewRenderer = new ViewRenderer($template, $viewObject['view_data']);
             $render = true;
