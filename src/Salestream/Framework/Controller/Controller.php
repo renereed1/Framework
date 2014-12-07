@@ -26,7 +26,7 @@ abstract class Controller
         {
             return;
         }
-        array_push($this->attributes, array($key => $data));
+        $this->attributes[$key] = $data;
     }
     
     public function getAttributes()
